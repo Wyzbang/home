@@ -13,16 +13,29 @@ TODAY = datetime.date.today().strftime("%Y%m%d")
 
 class isyReport(object):
     
-    def __init__(self, address, path ):
+    def __init__(self, address, path):
+        """
+        :param address: isy server ip
+        :param path: output path for logs
+        """
         self.isy = IsyServer(address)
-        self.path = path
+
+        today = datetime.datetime.now()
+        folder = today.strftime("%Y%m%d")
+        self.path = path + os.sep + folder
+
         self.nodes = {}
         
 
     def writeCSV(self, node, items):
-    
-        out = open( "%s%s%s_%s.csv" % (self.path, os.sep, node, TODAY), 'w' )
-        out.write( "on,off,duration\n")
+
+        try:
+            os.makedirs(self.path)
+        except OSError:
+            pass
+
+        out = open("%s%s%s_%s.csv" % (self.path, os.sep, node, TODAY), 'w')
+        out.write("on,off,duration\n")
     
         for item in items:
             on = item['on']
@@ -70,13 +83,13 @@ class isyReport(object):
                 self.setON( name, item.timestamp )
 
             elif item.control == OFF:
-                self.setOFF( name, item.timestamp )
+                self.setOFF(name, item.timestamp)
                     
         
         for node, items in self.nodes.items():
-            logging.info( "**** NODE: %s (%d)" % (node, len(items) ) )
-            if( len(items) > 0 ):
-                self.writeCSV( node, items )
+            logging.info("**** NODE: %s (%d)" % (node, len(items)))
+            if len(items) > 0:
+                self.writeCSV(node, items)
     
 
 if __name__ == "__main__":
